@@ -1,0 +1,129 @@
+United States
+    USAJobs (Federal jobs)
+    Snagajob (Hourly work)
+    Hired (Tech jobs)
+    Dice (Tech jobs)
+    WayUp (Internships, grads)
+    CollegeRecruiter
+United Kingdom
+	Reed
+	TotalJobs
+	CV-Library
+	Jobsite.co.uk
+	Adzuna UK
+	Milkround (graduates)
+Canada
+	Workopolis
+	Job Bank (Canada Gov)
+	Eluta
+	TalentEgg (graduates)
+Australia
+	SEEK
+	Jora
+	CareerOne
+	Adzuna AU
+India
+	Naukri.com	
+	Shine.com	
+	TimesJobs	
+	Monster India	
+	Freshersworld (graduates)	
+Germany
+	StepStone
+	Xing
+	Jobbörse der Bundesagentur für Arbeit
+	Honeypot (tech)
+	BerlinStartupJobs
+France
+	Apec (Executives)
+	Pole Emploi (Gov)
+	Cadremploi
+	RegionsJob
+	Meteojob
+Brazil
+	Catho
+	InfoJobs Brasil
+	VAGAS.com.br
+	Trampos.co (tech/startup)
+Kenya
+	BrighterMonday Kenya
+	Fuzu
+	MyJobsInKenya
+	Career Point Kenya
+Nigeria
+	Jobberman
+	Hot Nigerian Jobs
+	MyJobMag
+South Africa
+	Careers24
+	PNet
+	JobMail
+	CareerJunction
+Philippines
+	JobStreet Philippines
+	Kalibrr
+	OnlineJobs.ph (Remote)
+Pakistan
+	Rozee.pk
+	Mustakbil.com
+	BrightSpyre
+Indonesia
+	JobStreet Indonesia
+	Karir.com
+	Kalibrr Indonesia
+Japan
+	Daijob (English speakers)
+	GaijinPot Jobs
+	Rikunabi
+	Mynavi
+China
+	Zhaopin
+	51job
+	Liepin (exec)
+	Boss Zhipin
+Russia
+	HH.ru (HeadHunter)
+	SuperJob.ru
+	Rabota.ru
+Freelance & Gig Platforms
+	Upwork
+	Fiverr
+	Freelancer.com
+	PeoplePerHour
+	Toptal
+	Guru
+	Truelancer
+	Workana (Latin America)
+	99designs
+	SolidGigs
+Students & Internships
+	Internshala (India)
+	Chegg Internships
+	WayUp
+	Idealist.org
+	Globalplacement
+	ErasmusIntern.org
+Tech-Specific Job Boards
+	Stack Overflow Jobs (defunct but archived)
+	Hired
+GitHub Jobs (defunct)
+    Triplebyte (tech hiring platform)
+    RemoteTechJobs
+    JSJobs
+    Python.org Jobs
+    LaravelJobs
+    RubyNow
+Job Aggregators / Meta Search Engines
+    JobisJob
+    Trovit
+    Careerjet
+    Neuvoo (now Talent.com)
+    Indeed (aggregator + board)
+    Adzuna
+Nonprofit & NGO Jobs
+    Devex (Global dev)
+    Idealist.org
+    ReliefWeb
+    UN Jobs
+    UNDP Jobs
+    GlobalJobs.org
