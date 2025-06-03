@@ -9,7 +9,8 @@ from v1.models.database import User
 from v1.extension import SessionLocal
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = 'https://ef6f-102-219-209-246.ngrok-free.app/telegram'
+WEBHOOK_URL = 'https://2824-102-219-209-246.ngrok-free.app/telegram'
+PAGE_SIZE = 100
 
 if not TOKEN:
     raise ValueError("Bot token not found in environment variables")
@@ -54,29 +55,57 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     get_user(update)
     keyboard = [
         [
-            InlineKeyboardButton("See Available Jobs", callback_data="get_gigs"),
-            InlineKeyboardButton("Choose Your Field", callback_data="specific")
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    try:
-        await update.message.reply_text("Hello From Global Gigs. Choose an option:", reply_markup=reply_markup)
-    except TimedOut:
-        print("❌ Failed to send message: Timed out")
-
-async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [
-            InlineKeyboardButton("Main Menu", callback_data="specific"),
-            InlineKeyboardButton("All Available Jobs", callback_data="get_gigs")
+            InlineKeyboardButton("See All Jobs Links", callback_data="get_gigs"),
+            InlineKeyboardButton("Main Menu", callback_data="specific")
         ],
         [
             InlineKeyboardButton("Search", callback_data="search")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="Main Menu", reply_markup=reply_markup)
+    try:
+        await update.message.reply_text(
+            "*Global Gigs*!\nChoose an option:",
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
+        )
+    except TimedOut:
+        print("❌ Failed to send message: Timed out")
 
+async def nextprev(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [
+            InlineKeyboardButton("Main Menu", callback_data="specific"),
+            InlineKeyboardButton("Next >>", callback_data="next")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Proceed to next",
+        reply_markup=reply_markup
+    )
+
+async def send_gigs_page(update: Update, context):
+    query = update.callback_query
+    gigs = context.user_data["gigs"]
+    page = context.user_data["page"]
+
+    start = page * PAGE_SIZE
+    end = start + PAGE_SIZE
+    
+    send_func = query.message.reply_text if query else update.message.reply_text
+    
+    if start >= len(gigs):
+        await send_func("No more gigs.")
+        await start(update, context)
+        return
+
+    for row in gigs[start:end]:
+        await send_func(f"{row[1]}\n{row[3]}")
+ 
+    if end < len(gigs):
+        await nextprev(update, context)
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -84,10 +113,14 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     gigs = ask_database()
 
     if query.data == "get_gigs":
-        await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
-        for row in gigs:
-            await query.message.reply_text(f"{row[1]}\n{row[3]}")
-        await restart(update, context)
+        context.user_data["gigs"] = gigs
+        context.user_data["page"] = 0
+        await send_gigs_page(update, context)
+
+    elif query.data == "next":
+        context.user_data["page"] += 1
+        await send_gigs_page(update, context)
+        
     elif query.data == "specific":
         await department(update, context)
     elif query.data == "search":
@@ -106,15 +139,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if teaching_jobs:
             await query.message.reply_text("Teaching Jobs Found:")
-            for row in teaching_jobs:
-                try:
-                    await query.message.reply_text(f"{row[1]}\n{row[3]}")
-                except TelegramError as e:
-                    print(f"Error {e} occurred")
-            await restart(update, context)
+            context.user_data["gigs"] = teaching_jobs
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Teaching Currently")
-            await restart(update, context)
+            await start(update, context)
     elif query.data == "security":
         security_jobs = []
         for row in gigs:
@@ -122,13 +152,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if "security" in title or "guard" in title or "guards" in title:
                 security_jobs.append(row)
         if security_jobs:
-            await query.message.reply_text("Security Related Jobs Found:")
-            for row in security_jobs:
-                try:
-                    await query.message.reply_text(f"{row[1]}\n{row[3]}")
-                except TelegramError as e:
-                    print(f"Error {e} occurred")
-            await restart(update, context)
+            await query.message.reply_text("Security Jobs Found:")
+            context.user_data["gigs"] = security_jobs
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Security Currently")
             await restart(update, context)
@@ -140,13 +167,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if "developer" in title or " it " in title or "network" in title:
                 developer_jobs.append(row)
         if developer_jobs:
-            await query.message.reply_text("Developer Related Jobs Found:")
-            for row in developer_jobs:
-                try:
-                    await query.message.reply_text(f"{row[1]}\n{row[3]}")
-                except TelegramError as e:
-                    print(f"Error {e} occurred")
-            await restart(update, context)
+            await query.message.reply_text("Developer Jobs Found:")
+            context.user_data["gigs"] = developer_jobs
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
             
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Security Currently")
@@ -160,12 +184,9 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     biz_jobs.append(row)
         if biz_jobs:
             await query.message.reply_text("Business Related Jobs Found:")
-            for row in biz_jobs:
-                try:
-                    await query.message.reply_text(f"{row[1]}\n{row[3]}")
-                except TelegramError as e:
-                    print(f"Error {e} occurred")
-            await restart(update, context)
+            context.user_data["gigs"] = biz_jobs
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
             
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Business Currently")
@@ -174,18 +195,14 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "engineer":
         engineer_jobs = []
         for row in gigs:
-            await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
             title = row[1].lower()
             if "engineer" in title or "engineering" in title:
                 engineer_jobs.append(row)
         if engineer_jobs:
-            await query.message.reply_text("Engineer Related Jobs Found:")
-            for job in engineer_jobs:
-                try:
-                    await query.message.reply_text(f"{row[1]}\n{row[3]}")
-                except TelegramError as e:
-                    print(f"Error {e} occurred")
-            await restart(update, context)
+            await query.message.reply_text("Engineering Related Jobs Found:")
+            context.user_data["gigs"] = engineer_jobs
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
 
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Engineering Currently")
@@ -198,13 +215,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if "cashier" in title or "tourism" in title or "chef" in title or "hospitality" in title or "cook" in title:
                 hospitality_jobs.append(row)
         if hospitality_jobs:
-            await query.message.reply_text("Hospitality Related Jobs Found:")
-            for row in hospitality_jobs:
-                try:
-                    await query.message.reply_text(f"{row[1]}\n{row[3]}")
-                except TelegramError as e:
-                    print(f"Error {e} occurred")
-            await restart(update, context)
+            await query.message.reply_text("Hospitality $ Tourism Jobs Found:")
+            context.user_data["gigs"] = hospitality_jobs
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
 
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Hospitality Currently")
@@ -215,20 +229,24 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         medical_jobs = []
         for row in gigs:
             title = row[1].lower()
-            if "medicine" in title or "medical" in title or "clinical" in title or "nurse" in title or "nursing" in title or "hospital" in title or "health" in title or "cook" in title:
+            if "medicine" in title or "medical" in title or "clinical" in title or "nurse" in title or "nursing" in title or "hospital" in title or "health" in title:
                 medical_jobs.append(row)
         if medical_jobs:
             await query.message.reply_text("Medical Related Jobs Found:")
-            for row in medical_jobs:
-                try:
-                    await query.message.reply_text(f"{row[1]}\n{row[3]}")
-                except TelegramError as e:
-                    print(f"Error {e} occurred")
-            await restart(update, context)
+            context.user_data["gigs"] = medical_jobs
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
 
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Hospitality Currently")
             await restart(update, context)
+    elif query.data == "bug":
+        url = "https://wa.me/254797809846?text=Hello%20Globalgigs%20I%20found%20a%20Bug"
+        keyboard = [[
+            InlineKeyboardButton("Report Bug via WhatsApp", url=url)
+        ]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.message.reply_text("Click the button below to report a bug:", reply_markup=reply_markup)
     else:
         await query.edit_message_text("Wiriama never Created this button")
 
@@ -245,14 +263,18 @@ async def department(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("Hospitality", callback_data="hospitality")
         ],
         [
-            InlineKeyboardButton("Medical Related", callback_data="medical")
+            InlineKeyboardButton("Medical Related", callback_data="medical"),
+            InlineKeyboardButton("Search", callback_data="search")
+        ],
+        [
+            InlineKeyboardButton("Report A Bug", callback_data="bug")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.callback_query.message.reply_text("Hello From GLobal Gigs. Choose Your option:", reply_markup=reply_markup)
+    await update.callback_query.message.reply_text("Choose Your option:", reply_markup=reply_markup)
 
 
-def search(count, keyword):
+def search(keyword):
     gigs = ask_database()
     found = []
     count = 0
@@ -266,8 +288,8 @@ def search(count, keyword):
         word = corrected
     for row in gigs:
         title = row[1].lower()
-        if word in title:
-            found.append(row[1])
+        if word.lower() in title:
+            found.append(row)
             count += 1
     return (count, word, found)
 
@@ -276,26 +298,30 @@ async def reply_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text.lower()
     get_user(update)
 
-    if "hello" in user_message:
+    if "hello" in user_message or "hey" in user_message:
         await update.message.reply_text("Hello, Can I Help You Find a gig?")
-        await restart(update, context)
-    elif "gigs" in user_message:
+        await start(update, context)
+    elif "gigs" in user_message or "jobs" in user_message:
         await update.message.reply_text("Here are latest gigs for you")
-        for gig in gigs:
-            for jobs in gig:
-                #print(jobs)
-                await update.message.reply_text(f"{jobs['title']} {jobs['link']}")
-        await restart(update, context)
+        for row in gigs:
+            await update.message.reply_text(f"{row[1]}\n{row[3]}")
+        await start(update, context)
         
     else:
         if context.user_data.get("awaiting_keyword"):
             keyword = update.message.text
             count, words, found = search(keyword)
-            await update.message.reply_text(f"Your Search: {words} Got {count} jobs")
+            await update.message.reply_text(
+                f"Your Search: *{words}* Got {count} jobs",
+                parse_mode="Markdown"
+            )
+            context.user_data["gigs"] = found
+            context.user_data["page"] = 0
+            await send_gigs_page(update, context)
             context.user_data["awaiting_keyword"] = False
         else:
-            await update.message.reply_text("🤬🤬Sorry, Ask for something relevant\nTry This")
-        await restart(update, context)
+            await update.message.reply_text("Sorry, Ask for something relevant\nTry This")
+        await start(update, context)
 
 bot_app.add_handler(CommandHandler("start", start))
 bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply_text))
