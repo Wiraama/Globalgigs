@@ -7,10 +7,11 @@ from telegram.error import TimedOut, TelegramError
 from telegram.request import HTTPXRequest
 from v1.models.database import User
 from v1.extension import SessionLocal
+from buttons import start, nextprev
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = 'https://2824-102-219-209-246.ngrok-free.app/telegram'
-PAGE_SIZE = 100
+WEBHOOK_URL = 'https://e59c-102-219-209-246.ngrok-free.app/telegram'
+PAGE_SIZE = 10
 
 if not TOKEN:
     raise ValueError("Bot token not found in environment variables")
@@ -50,41 +51,6 @@ def get_user(update: Update):
         session.commit()
     session.close()
 
-# add handler
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    get_user(update)
-    keyboard = [
-        [
-            InlineKeyboardButton("See All Jobs Links", callback_data="get_gigs"),
-            InlineKeyboardButton("Main Menu", callback_data="specific")
-        ],
-        [
-            InlineKeyboardButton("Search", callback_data="search")
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    try:
-        await update.message.reply_text(
-            "*Global Gigs*!\nChoose an option:",
-            reply_markup=reply_markup,
-            parse_mode="Markdown"
-        )
-    except TimedOut:
-        print("❌ Failed to send message: Timed out")
-
-async def nextprev(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [
-            InlineKeyboardButton("Main Menu", callback_data="specific"),
-            InlineKeyboardButton("Next >>", callback_data="next")
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Proceed to next",
-        reply_markup=reply_markup
-    )
 
 async def send_gigs_page(update: Update, context):
     query = update.callback_query
