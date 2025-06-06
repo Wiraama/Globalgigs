@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = 'https://06b0-102-209-56-114.ngrok-free.app/telegram'
+WEBHOOK_URL = 'https://globalgigs.onrender.com/telegram'
 PAGE_SIZE = 10
 
 if not TOKEN:
