@@ -4,5 +4,4 @@ Flask-SQLAlchemy
 mysql-connector-python
 flask-bcrypt
 beautifulsoup4
-beautifulsoup4 lxml
 python-dotenv
