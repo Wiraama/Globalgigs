@@ -1,7 +1,8 @@
 import asyncio, threading, os
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackQueryHandler, Application, CommandHandler, ContextTypes, MessageHandler, filters
-
+from v1.models.database import User
+from v1.extension import SessionLocal
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     get_user(update)
@@ -23,6 +24,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     except TimedOut:
         print("❌ Failed to send message: Timed out")
+
+def get_user(update: Update):
+    tg_user = update.message.from_user
+    
+    session = SessionLocal()
+    
+    user = session.query(User).filter_by(tel_id=tg_user.id).first()
+    if not user:
+        new_user = User(
+            tel_id=tg_user.id,
+            f_name=tg_user.first_name,
+            l_name=tg_user.last_name
+        )
+        session.add(new_user)
+        session.commit()
+    session.close()
 
 async def nextprev(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [

@@ -7,10 +7,10 @@ from telegram.error import TimedOut, TelegramError
 from telegram.request import HTTPXRequest
 from v1.models.database import User
 from v1.extension import SessionLocal
-from buttons import start, nextprev
+from v1.views.buttons import start, nextprev, get_user
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = 'https://e59c-102-219-209-246.ngrok-free.app/telegram'
+WEBHOOK_URL = 'https://06b0-102-209-56-114.ngrok-free.app/telegram'
 PAGE_SIZE = 10
 
 if not TOKEN:
@@ -34,22 +34,6 @@ def run_loop():
     asyncio.set_event_loop(loop)
     loop.run_until_complete(setup_bot())
     loop.run_forever()
-
-def get_user(update: Update):
-    tg_user = update.message.from_user
-    
-    session = SessionLocal()
-    
-    user = session.query(User).filter_by(tel_id=tg_user.id).first()
-    if not user:
-        new_user = User(
-            tel_id=tg_user.id,
-            f_name=tg_user.first_name,
-            l_name=tg_user.last_name
-        )
-        session.add(new_user)
-        session.commit()
-    session.close()
 
 
 async def send_gigs_page(update: Update, context):
