@@ -5,3 +5,4 @@ mysql-connector-python
 flask-bcrypt
 beautifulsoup4
 python-dotenv
+requests
