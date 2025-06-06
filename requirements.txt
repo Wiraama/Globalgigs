@@ -2,5 +2,7 @@ flask
 python-telegram-bot
 Flask-SQLAlchemy
 mysql-connector-python
-flask-bcrypt 
+flask-bcrypt
+beautifulsoup4
+beautifulsoup4 lxml
 python-dotenv
