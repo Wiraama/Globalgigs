@@ -1,0 +1,6 @@
+flask
+python-telegram-bot
+Flask-SQLAlchemy
+mysql-connector-python
+flask-bcrypt 
+python-dotenv

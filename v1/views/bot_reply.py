@@ -8,6 +8,10 @@ from telegram.request import HTTPXRequest
 from v1.models.database import User
 from v1.extension import SessionLocal
 from v1.views.buttons import start, nextprev, get_user
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 WEBHOOK_URL = 'https://06b0-102-209-56-114.ngrok-free.app/telegram'
