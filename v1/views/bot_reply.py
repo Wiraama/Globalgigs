@@ -15,7 +15,8 @@ load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 #WEBHOOK_URL = 'mawira.pythonanywhere.com/telegram'
-WEBHOOK_URL = 'https://a6f0-102-219-210-42.ngrok-free.app/telegram'
+#WEBHOOK_URL = 'https://a6f0-102-219-210-42.ngrok-free.app/telegram'
+WEBHOOK_URL = 'https://globalgigs.onrender.com/telegram'
 PAGE_SIZE = 10
 
 if not TOKEN:
