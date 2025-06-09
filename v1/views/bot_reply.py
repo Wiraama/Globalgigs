@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = 'mawira.pythonanywhere.com/telegram'
+#WEBHOOK_URL = 'mawira.pythonanywhere.com/telegram'
+WEBHOOK_URL = 'https://a6f0-102-219-210-42.ngrok-free.app/telegram'
 PAGE_SIZE = 10
 
 if not TOKEN:
@@ -45,21 +46,22 @@ async def send_gigs_page(update: Update, context):
     gigs = context.user_data["gigs"]
     page = context.user_data["page"]
 
-    start = page * PAGE_SIZE
-    end = start + PAGE_SIZE
+    start_index = page * PAGE_SIZE
+    end_index = start_index + PAGE_SIZE
     
     send_func = query.message.reply_text if query else update.message.reply_text
     
-    if start >= len(gigs):
+    if start_index >= len(gigs):
         await send_func("No more gigs.")
         await start(update, context)
-        return
 
-    for row in gigs[start:end]:
-        await send_func(f"{row[1]}\n{row[3]}")
- 
-    if end < len(gigs):
+    for row in gigs[start_index:end_index]:
+        await send_func(f"{row.title}\n{row.link}")
+
+    if end_index < len(gigs):
         await nextprev(update, context)
+    elif end_index > len(gigs):
+        await start(update, context)
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -87,7 +89,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         teaching_jobs = []
 
         for row in gigs:
-            title = row[1].lower()
+            title = (row.title or "").lower()
             if "principal" in title or "teacher" in title or "teaching" in title:
                 teaching_jobs.append(row)
 
@@ -102,7 +104,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "security":
         security_jobs = []
         for row in gigs:
-            title = row[1].lower()
+            title = (row.title or "").lower()
             if "security" in title or "guard" in title or "guards" in title:
                 security_jobs.append(row)
         if security_jobs:
@@ -112,12 +114,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await send_gigs_page(update, context)
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Security Currently")
-            await restart(update, context)
+            await start(update, context)
             
     elif query.data == "developer":
         developer_jobs = []
         for row in gigs:
-            title = row[1].lower()
+            title = (row.title or "").lower()
             if "developer" in title or " it " in title or "network" in title:
                 developer_jobs.append(row)
         if developer_jobs:
@@ -128,7 +130,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Security Currently")
-            await restart(update, context)
+            await start(update, context)
             
     elif query.data == "biz":
         biz_jobs = []
@@ -144,12 +146,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Business Currently")
-            await restart(update, context)
+            await start(update, context)
             
     elif query.data == "engineer":
         engineer_jobs = []
         for row in gigs:
-            title = row[1].lower()
+            title = (row.title or "").lower()
             if "engineer" in title or "engineering" in title:
                 engineer_jobs.append(row)
         if engineer_jobs:
@@ -160,12 +162,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Engineering Currently")
-            await restart(update, context)
+            await start(update, context)
     
     elif query.data == "hospitality":
         hospitality_jobs = []
         for row in gigs:
-            title = row[1].lower()
+            title = (row.title or "").lower()
             if "cashier" in title or "tourism" in title or "chef" in title or "hospitality" in title or "cook" in title:
                 hospitality_jobs.append(row)
         if hospitality_jobs:
@@ -176,13 +178,13 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Hospitality Currently")
-            await restart(update, context)
+            await start(update, context)
     
     elif query.data == "medical":
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
         medical_jobs = []
         for row in gigs:
-            title = row[1].lower()
+            title = (row.title or "").lower()
             if "medicine" in title or "medical" in title or "clinical" in title or "nurse" in title or "nursing" in title or "hospital" in title or "health" in title:
                 medical_jobs.append(row)
         if medical_jobs:
@@ -193,7 +195,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         else:
             await query.message.reply_text("OOOPS!!!\nNo Jobs Related To Hospitality Currently")
-            await restart(update, context)
+            await start(update, context)
     elif query.data == "bug":
         url = "https://wa.me/254797809846?text=Hello%20Globalgigs%20I%20found%20a%20Bug"
         keyboard = [[
@@ -241,7 +243,7 @@ def search(keyword):
         corrected = ' '.join([spell.correction(word) for word in keyword.split()])
         word = corrected
     for row in gigs:
-        title = row[1].lower()
+        title = (row.title or "").lower()
         if word.lower() in title:
             found.append(row)
             count += 1

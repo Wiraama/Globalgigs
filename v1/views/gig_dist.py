@@ -5,6 +5,7 @@ from v1.gig_center.kenya.kenyajobs import get_gig_kenyajobs
 from v1.gig_center.kenya.jobwebkenya import get_gig_jobwebkenya
 from .to_database import add_gig
 import mysql.connector
+from v1.models.database import User, Gigs
 
 def add_data():
     brightmonday = get_gig_brightermonday()
@@ -19,7 +20,7 @@ def add_data():
         add_gig(gig)
 
 def ask_database():
-    conn = mysql.connector.connect(
+    """conn = mysql.connector.connect(
         host="192.168.1.100",
         user="root",
         password="MyStrongPass123!",
@@ -33,5 +34,6 @@ def ask_database():
     gigs_data = cursor.fetchall()
 
     cursor.close()
-    conn.close()
+    conn.close()"""
+    gigs_data = Gigs.query.all()
     return gigs_data
